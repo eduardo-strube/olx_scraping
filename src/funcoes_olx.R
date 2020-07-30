@@ -21,8 +21,8 @@ extrairAnuncios <- function(url_pagina, info_adicional) {
   # ... deve ser usado apenas para apartamentos, pois a sintaxe do html para quartos é diferente
   mycurl <- curl(url_pagina)
   mycurl <- read_html(mycurl, handle = curl::new_handle("useragent" = "Mozilla/5.0"))
-  
-  x <- mycurl %>% html_nodes(".fnmrjs-0")
+
+    x <- mycurl %>% html_nodes(".fnmrjs-0")
   
   # extrair link do anuncio
   col_links <- mycurl %>% html_nodes(".fnmrjs-0") %>% html_attr("href")
@@ -56,4 +56,44 @@ extrairAnuncios <- function(url_pagina, info_adicional) {
                     bairro = col_bairros,
                     adicional = col_adicionais,
                     stringsAsFactors = FALSE))
+}
+
+
+extrairAnuncios_tryCatch <- function(url_pagina, info_adicional) {
+  
+  out <- tryCatch(
+    {
+      extrairAnuncios(url_pagina, info_adicional)
+    }, 
+    
+    error = function(cond){
+      message(paste("URL does not seem to exist:", url_pagina))
+      message("Here's the original error message:")
+      message(cond)
+      # Choose a return value in case of error
+      return(NULL)
+      
+    },
+    warning = function(cond) {
+      message(paste("URL caused a warning:", url_pagina))
+      message("Here's the original warning message:")
+      message(cond)
+      # Choose a return value in case of warning
+      return(NULL)
+    },
+    finally = {
+      # NOTE:
+      # Here goes everything that should be executed at the end,
+      # regardless of success or error.
+      # If you want more than one expression to be executed, then you 
+      # need to wrap them in curly brackets ({...}); otherwise you could
+      # just have written 'finally=<expression>' 
+      message(paste("Processed URL:", url_pagina))
+      #message("Some other message at the end")
+    }
+  
+    )  
+
+  return(out)
+  
 }
